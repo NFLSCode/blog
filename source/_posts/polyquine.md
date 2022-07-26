@@ -22,6 +22,17 @@ Quine AC记录（初版）：
 
 ver 8（2warning，gnu++ only）
 
+```python
+#import<cstdio>/*
+'''*/
+main(){auto/*'''
+def printf(a,*b):print(a%b,end='')#*/
+_="#import<cstdio>/*%c'''*/%cmain(){auto/*'''%cdef printf(a,*b):print(a%%b,end='')#*/%c_=%c%s%c;printf(_,10,10,10,10,34,_,34,10,10,10);%c#/*%c{#*/%c}";printf(_,10,10,10,10,34,_,34,10,10,10);
+#/*
+{#*/
+}
+```
+
 ```cpp
 #import<cstdio>/*
 '''*/

@@ -30,7 +30,7 @@ date: 2021-08-08 17:44:15
 
 下图为在 `vector` 中，四个迭代器位置的关系。
 
-![图片炸了，请私信](https://cdn.luogu.com.cn/upload/image_hosting/1qwxfmva.png)
+![图片炸了](https://cdn.luogu.com.cn/upload/image_hosting/1qwxfmva.png)
 
 对于反向迭代器，递增操作的含义会倒过来，如 `++it` 会使 `it` 移动到前一个元素。
 

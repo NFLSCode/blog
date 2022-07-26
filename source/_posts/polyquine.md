@@ -22,7 +22,7 @@ Quine AC记录（初版）：
 
 ver 8（2warning，gnu++ only）
 
-```python
+```py
 #import<cstdio>/*
 '''*/
 main(){auto/*'''

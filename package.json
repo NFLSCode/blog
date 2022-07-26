@@ -25,7 +25,7 @@
     "hexo-renderer-pug": "^3.0.0",
     "hexo-renderer-sass-next": "^0.1.2",
     "hexo-renderer-stylus": "^2.0.0",
-    "hexo-server": "^2.0.0",
+    "hexo-server": "^3.0.0",
     "hexo-theme-landscape": "^0.0.3",
     "warehouse": "^4.0.1"
   }

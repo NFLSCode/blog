@@ -105,7 +105,7 @@ int main()
 
 为什么会有这种情况呢？
 
-![图片炸了，请私信](https://cdn.luogu.com.cn/upload/image_hosting/1qwxfmva.png)
+![图片炸了](https://cdn.luogu.com.cn/upload/image_hosting/1qwxfmva.png)
 （没错还是这张图）
 
 假设反向迭代器转换后不会移位的话：

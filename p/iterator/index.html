@@ -1,0 +1,267 @@
+<!DOCTYPE html><html class="appearance-auto" lang="en"><head><meta charset="UTF-8"><title>C++ 迭代器，了解一下？（2）</title><meta name="description" content="分块好耶"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="本文将C++ 迭代器，了解一下？ 中一笔带过的一些东西讲了一下。
+本文介绍三种特殊的迭代器。除了反向迭代器，都需要包含头文件 iterator 。而反向迭代器需要包含相关容器的头文件。
+本文的代码均使用 C++11 标准。
+
+0. 前置芝士
+标准库函数
+
+模板及相关操作
+
+普通迭代器的使用
+
+
+1. 反向迭代器反向迭代器就是在容器中从尾元素向首元素反向移动的迭代器，它也是每个容器自己定义的。
+对于所有支持反向迭代器的容器，我们都可以通过调用 rbegin() 以及 rend() 来获取反向迭代器。rbegin() 返回一个指向尾元素的迭代器，而 rend() ·返回一个首元素前一个元素的迭代器。
+下图为在 vector 中，四个迭代器位置的关系。
+
+对于反向迭代器，递增操作的含义会倒过来，如 ++it 会使.."><meta name="generator" content="Hexo 6.2.0"></head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">ppip's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">C++ 迭代器，了解一下？（2）</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Click back to the top</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%89%8D%E7%BD%AE%E8%8A%9D%E5%A3%AB"><span class="toc-text">0. 前置芝士</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%8F%8D%E5%90%91%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="toc-text">1. 反向迭代器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E5%90%91%E8%BF%AD%E4%BB%A3%E5%99%A8%E5%92%8C%E6%99%AE%E9%80%9A%E8%BF%AD%E4%BB%A3%E5%99%A8%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">反向迭代器和普通迭代器的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-iostream-%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="toc-text">2. iostream 迭代器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#istream-iterator"><span class="toc-text">istream_iterator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ostream-iterator"><span class="toc-text">ostream_iterator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%8B%E9%A2%98%EF%BC%9AA-B-Problem"><span class="toc-text">例题：A+B Problem</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%8F%92%E5%85%A5%E8%BF%AD%E4%BB%A3%E5%99%A8"><span class="toc-text">3. 插入迭代器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">4. 参考文献</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Cpp"><i class="tag post-item-tag">Cpp</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">C++ 迭代器，了解一下？（2）</h1><time class="has-text-grey" datetime="2021-08-08T09:44:15.000Z">2021-08-08</time><article class="mt-2 post-content"><p>本文将<a href="https://www.luogu.com.cn/blog/poi/cpp-iterator">C++ 迭代器，了解一下？</a> 中一笔带过的一些东西讲了一下。</p>
+<p>本文介绍三种特殊的迭代器。除了反向迭代器，都需要包含头文件 <code>iterator</code> 。而反向迭代器需要包含相关容器的头文件。</p>
+<p>本文的代码均使用 <code>C++11</code> 标准。</p>
+<span id="more"></span>
+<h2 id="0-前置芝士"><a href="#0-前置芝士" class="headerlink" title="0. 前置芝士"></a>0. 前置芝士</h2><ul>
+<li><p>标准库函数</p>
+</li>
+<li><p>模板及相关操作</p>
+</li>
+<li><p>普通迭代器的使用</p>
+</li>
+</ul>
+<h2 id="1-反向迭代器"><a href="#1-反向迭代器" class="headerlink" title="1. 反向迭代器"></a>1. 反向迭代器</h2><p>反向迭代器就是在容器中从尾元素向首元素反向移动的迭代器，它也是每个容器自己定义的。</p>
+<p>对于所有支持反向迭代器的容器，我们都可以通过调用 <code>rbegin()</code> 以及 <code>rend()</code> 来获取反向迭代器。<code>rbegin()</code> 返回一个指向尾元素的迭代器，而 <code>rend()</code> ·返回一个首元素前一个元素的迭代器。</p>
+<p>下图为在 <code>vector</code> 中，四个迭代器位置的关系。</p>
+<p><img src="https://cdn.luogu.com.cn/upload/image_hosting/1qwxfmva.png" alt="图片炸了"></p>
+<p>对于反向迭代器，递增操作的含义会倒过来，如 <code>++it</code> 会使 <code>it</code> 移动到前一个元素。</p>
+<p>那么为什么如此定义递增呢？因为这样实现的话，我们在操作迭代器时，就无需知道迭代器是正向还是反向。</p>
+<pre><code class="lang-C++">// 此代码为一个反向迭代器的例子。
+
+// 输出：
+// 1 2 3 4 5 6 7 8 9
+// 9 8 7 6 5 4 3 2 1
+
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+using namespace std;
+
+// 一个打印函数
+template &lt;typename T&gt;
+void print(T beg, T end)
+&#123;
+    for (T it = beg; it != end; ++it)
+        cout &lt;&lt; *it &lt;&lt; &#39; &#39;;
+    cout &lt;&lt; endl;
+&#125;
+int main()
+&#123;
+    vector&lt;int&gt; v = &#123;1, 2, 3, 4, 5, 6, 7, 8, 9&#125;;
+    print(v.begin(), v.end());
+    print(v.rbegin(), v.rend());
+    return 0;
+&#125;
+</code></pre>
+<p>如上述代码所示，我们不需要为反向迭代器单独编写一份打印函数。这正是泛型编程的特点之一。</p>
+<h3 id="反向迭代器和普通迭代器的关系"><a href="#反向迭代器和普通迭代器的关系" class="headerlink" title="反向迭代器和普通迭代器的关系"></a>反向迭代器和普通迭代器的关系</h3><p>如果我们需要将一个反向迭代器转化为正向的，应该如何操作？</p>
+<p>可以使用成员函数 <code>base()</code>。</p>
+<p>例如，我们需要在一个 <code>vector</code> 中打印最后一个 <code>0</code> 之后的数字。</p>
+<pre><code class="lang-c++">// 一个神奇的示例
+
+// 输出：3 7 2 1
+
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int main()
+&#123;
+    vector&lt;int&gt; v = &#123;3, 5, 4, 0, 2, 6, 0, 3, 7, 2, 1&#125;;
+
+    auto last0 = find(v.rbegin(), v.rend(), 0);
+
+    for (auto it = last0.base(); it != v.end(); ++it)
+        cout &lt;&lt; *it &lt;&lt; &#39; &#39;;
+
+    cout &lt;&lt; endl;
+    return 0;
+&#125;
+</code></pre>
+<p>这个程序有一个问题：在转换迭代器的时候，并未跳过 <code>0</code>，所以 <code>it</code> 被初始化的时候，应该第一个输出 <code>0</code>。可是它没有。</p>
+<p>这说明：<strong>反向迭代器在转换后有移位</strong>。</p>
+<p>为什么会有这种情况呢？</p>
+<p><img src="https://cdn.luogu.com.cn/upload/image_hosting/1qwxfmva.png" alt="图片炸了"><br>（没错还是这张图）</p>
+<p>假设反向迭代器转换后不会移位的话：</p>
+<ul>
+<li><p>如果转换 <code>rend()</code>，它对应什么？</p>
+</li>
+<li><p>转换哪一个反向迭代器，能使它变成 <code>end()</code>？</p>
+</li>
+</ul>
+<p>所以我们得出结论：为了保证<strong>一一对应</strong>，在转换后，<code>rbegin()</code> 变成 <code>end()</code>，<code>rend()</code> 变成 <code>begin()</code>。</p>
+<p>这就是移位的由来。</p>
+<p>还有一个问题：那普通迭代器如何转为反向迭代器？</p>
+<p>答：反向迭代器有一个构造函数，传入一个普通迭代器。</p>
+<p>如：</p>
+<pre><code class="lang-c++">vector&lt;int&gt; v = &#123;2, 1, 3&#125;;
+auto it = v.begin();
+vector&lt;int&gt;::reverse_iterator rit(it); //rit 指向 rend()
+</code></pre>
+<p>（不过这样比 <code>auto</code> 累多了</p>
+<h2 id="2-iostream-迭代器"><a href="#2-iostream-迭代器" class="headerlink" title="2. iostream 迭代器"></a>2. <code>iostream</code> 迭代器</h2><p>这是极为特殊的一种迭代器。<code>iostream</code> 迭代器（或流迭代器）可以绑定流以进行输入输出。流迭代器可以通用化、简化输入输出。</p>
+<h3 id="istream-iterator"><a href="#istream-iterator" class="headerlink" title="istream_iterator"></a><code>istream_iterator</code></h3><p>当创建一个输入流迭代器的时候，可以绑定一个流，如 <code>cin</code>。但是不一定。未绑定的迭代器可以当作 <code>EOF</code> 使用，也可以成为 <code>IO</code> 错误的判定。 </p>
+<p>下面是一个例子：</p>
+<pre><code class="lang-c++">vector&lt;int&gt; v;
+istream_iterator&lt;int&gt; in(cin), eof;
+while (in!=eof)
+    v.push_back(*in++);
+</code></pre>
+<p>它等价于</p>
+<pre><code class="lang-c++">vector&lt;int&gt; v;
+int x;
+while (cin &gt;&gt; x)
+    v.push_back(x);
+</code></pre>
+<p>但其实 <code>vector</code> 有一个接受两个·迭代器版本的构造函数，所以我们还可以写成如下形式：</p>
+<pre><code class="lang-c++">istream_iterator&lt;int&gt; in(cin), eof;
+vector&lt;int&gt; v(in, eof);
+</code></pre>
+<p>这体现了流迭代器的简便之处。</p>
+<p>下表列出了输入流迭代器支持的操作（<code>ii&lt;T&gt;</code> 表示 <code>istream_iterator&lt;T&gt;</code>）：<br>|||<br>|—-|—-|<br>|<code>ii&lt;T&gt; in(is);</code>|<code>in</code> 从输入流 <code>is</code> 读入类型为 <code>T</code> 的值|<br>|<code>ii&lt;T&gt; end;</code>|读入类型为 <code>T</code> 的值的输入流迭代器，表示尾后位置|<br>|<code>in1 == in2</code>|<code>in1</code> 和 <code>in2</code> 必须读取相同类型。如果它们绑定了同一个流，或都为尾后位置则为真|<br>|<code>in1 != in2</code>|见 <code>in1 == in2</code>|<br>|<code>*in</code>|返回从流中读取的值|<br>|<code>++in, in++</code>|使用元素定义的运算符 <code>&gt;&gt;</code> 读取下一个值|</p>
+<p>我们还可以使用任何传入输入迭代器的标准库算法，下面是一个例子：</p>
+<pre><code class="lang-c++">istream_iterator&lt;int&gt; in(cin), eof;
+cout &lt;&lt; accumulate(in, eof, 0) &lt;&lt; endl;
+</code></pre>
+<p>其中 <code>accumulate</code> 函数负责求和。在这里，它表示 <code>0</code> 加上从 <code>in</code> 到 <code>eof</code> 之前（即在文件尾或非法输入之前输入的 <code>int</code>）的和。</p>
+<p>如输入：<br><code>1 2 3 4 5 6 7 8 9</code></p>
+<p>则输出 <code>45</code>。</p>
+<h3 id="ostream-iterator"><a href="#ostream-iterator" class="headerlink" title="ostream_iterator"></a><code>ostream_iterator</code></h3><p>输出流迭代器类似输入，但不支持尾后元素（即默认构造）。创建一个输出流迭代器时，提供一个可选的第二参数，它是一个字符串，表示每次输出后打印的字符串。它必须是一个 <code>C</code> 风格字符串。</p>
+<p>输出流迭代器支持的所有操作如下表（其中 <code>oi&lt;T&gt;</code> 表示 <code>ostream_iterator&lt;T&gt;</code>）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>oi&lt;T&gt; out(os)</code></td>
+<td><code>out</code> 将类型为 <code>T</code> 的值输出到 <code>os</code> 中</td>
+</tr>
+<tr>
+<td><code>oi&lt;T&gt; out(os,d)</code></td>
+<td>同上，但每次输出后都再输出一个 <code>d</code>，<code>d</code> 是一个 <code>C</code> 风格字符串</td>
+</tr>
+<tr>
+<td><code>out = val</code></td>
+<td>用 <code>&lt;&lt;</code> 运算符将 <code>val</code> 写入到 <code>out</code> 绑定的流中</td>
+</tr>
+<tr>
+<td><code>*out, ++out, out++</code></td>
+<td>这些运算符是存在的，但不对 <code>out</code> 做任何事情。每个运算符都返回 <code>out</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其中最后一条是为了更好的写出泛型代码，就如同之前提到的反向迭代器的递增操作。</p>
+<pre><code class="lang-c++">ostream&lt;int&gt; out(cout,&quot; &quot;); //注意不要传入字符！
+for (auto i : v) //v 是一个 vector
+    *out++ = i; //等价于 out = i，但这样的操作更普遍、更易懂
+</code></pre>
+<p>同样的，输出流迭代器也有更好的使用方法，那就是把循环替换为标准库算法：</p>
+<p><code>copy(v.begin(), v.end(), out);</code></p>
+<h3 id="例题：A-B-Problem"><a href="#例题：A-B-Problem" class="headerlink" title="例题：A+B Problem"></a>例题：<a href="https://www.luogu.com.cn/problem/P1001">A+B Problem</a></h3><p>让我们用流迭代器解决解决这个问题<a href="https://www.luogu.com.cn/record/55312776">（或成为全谷最臭代码</a>：</p>
+<pre><code class="lang-c++">#include &lt;iostream&gt;
+#include &lt;iterator&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+
+int main()
+&#123;
+    ostream_iterator&lt;int&gt; out(cout,&quot;\n&quot;);
+    istream_iterator&lt;int&gt; in(cin);
+    int a = *in++;
+    int b = *in++;
+    out = a + b;
+    return 0;
+&#125;
+</code></pre>
+<p>您也可以尝试使用前文提到的 <code>accumulate</code> 函数（需要头文件 <code>numeral</code>）来收获更短的代码，或改用 <code>cout</code> 来收获更更短的代码。</p>
+<h2 id="3-插入迭代器"><a href="#3-插入迭代器" class="headerlink" title="3. 插入迭代器"></a>3. 插入迭代器</h2><p>插入迭代器是一个很神奇的东西。例如下面的代码</p>
+<pre><code class="lang-c++">vector&lt;int&gt; v1 = &#123;0, 1, 2, 3&#125;;
+vector&lt;int&gt; v2(v1.size());
+copy(v1.begin(), v1.end(), v2.begin());
+</code></pre>
+<p>实际上可以简化成如下代码：</p>
+<pre><code class="lang-c++">vector&lt;int&gt; v1 = &#123;0, 1, 2, 3&#125;;
+vector&lt;int&gt; v2;
+copy(v1.begin(), v2.end(), back_inserter(v2));
+</code></pre>
+<p>不难发现，<code>back_inserter</code> 返回一个迭代器，但它本身并不是一个迭代器。实际上，“插入迭代器”都是<strong>迭代器适配器</strong>（相关概念请自行 BFS）。</p>
+<p>下表列出了插入迭代器返回的迭代器的操作：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>it = t</code></td>
+<td>在 <code>it</code> 的指定位置插入元素</td>
+</tr>
+<tr>
+<td><code>*it, ++it, it++</code></td>
+<td>这些运算符是存在的，但不对 <code>it</code> 做任何事情。每个运算符都返回 <code>it</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>对于“指定位置”有：</p>
+<ul>
+<li><p><code>front_inserter</code> 等价于调用 <code>push_front</code>;</p>
+</li>
+<li><p><code>back_inserter</code> 等价于调用 <code>push_back</code>;</p>
+</li>
+<li><p><code>inserter</code> 接受一个第二参数，它是一个迭代器 <code>it</code>，等价于调用 <code>insert</code>，且插入位置在 <code>it</code> 的前面。</p>
+</li>
+</ul>
+<pre><code class="lang-c++">// 三种 inserter 的示例
+
+// 输出：
+// 5 1 2 3 4
+// 4 3 2 1 5
+// 1 2 3 4 5
+
+#include &lt;iostream&gt;
+#include &lt;list&gt;
+#include &lt;algorithm&gt;
+#include &lt;iterator&gt;
+using namespace std;
+void print(list&lt;int&gt; l)
+&#123;
+    ostream_iterator&lt;int&gt; out(cout, &quot; &quot;);
+    copy(l.begin(), l.end(), out);
+    cout &lt;&lt; endl;
+&#125;
+int main()
+&#123;
+    list&lt;int&gt; l = &#123;1, 2, 3, 4&#125;;
+    list&lt;int&gt; l1 = &#123;5&#125;, l2 = &#123;5&#125;, l3 = &#123;5&#125;; // 空 list
+    copy(l.begin(), l.end(), back_inserter(l1));
+    copy(l.begin(), l.end(), front_inserter(l2));
+    copy(l.begin(), l.end(), inserter(l3, l3.begin())); // 在 l3.begin() 前面插入
+    print(l1);
+    print(l2);
+    print(l3);
+    return 0;
+&#125;
+</code></pre>
+<p>实际上，这些迭代器也可以存下来：</p>
+<p><code>auto bit=back_inserter(v);</code></p>
+<p>同时，只有支持对应操作的容器才能使用。</p>
+<h2 id="4-参考文献"><a href="#4-参考文献" class="headerlink" title="4. 参考文献"></a>4. 参考文献</h2><p><em>C++ Primer 5th edition</em></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/p/solution-p8271/" title="[USACO22OPEN]COW Operations S 题解"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">Previous: [USACO22OPEN]COW Operations S 题解</span></a><a class="button is-default" href="/p/set-and-map/" title="浅谈c++中的set与map家族"><span class="has-text-weight-semibold">Next: 浅谈c++中的set与map家族</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="NFLSCode/nflscode.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><a title="twitter" target="_blank" rel="noopener nofollow" href="//twitter.com//"><i class="iconfont icon-twitter"></i></a><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/NFLSCode"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com//"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--><a title="facebook" target="_blank" rel="noopener nofollow" href="//www.facebook.com//"><i class="iconfont icon-tian7_facebook"></i></a></section><p><span>Copyright ©</span><span> ppip 2022</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

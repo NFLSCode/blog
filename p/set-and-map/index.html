@@ -1,0 +1,174 @@
+<!DOCTYPE html><html class="appearance-auto" lang="en"><head><meta charset="UTF-8"><title>浅谈c++中的set与map家族</title><meta name="description" content="分块好耶"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="众所周知，set 和 map 是两种常用的 STL 容器。
+
+0. 说句闲话前置芝士：
+set 与 map 的熟练使用，包括遍历
+
+本文包含以下内容：
+
+
+
+
+不排序
+不去重
+
+
+
+
+set
+unordered_set
+multiset
+
+
+map
+unordered_map
+multimap
+
+
+
+
+并且全部为 C++11 标准中的内容。
+1. 不排序set 和 map 都是用红黑树实现的，虽然是 $\log n$，但还是比较慢的。
+unordered_set 就会快很多，它不使用平衡树，而是用哈希实现，复杂度 $O(1)$。
+由于是把相同哈希值的元素放在一起，遍历时没有顺序。并不保证按输入顺序输出。
+#include &amp;lt;unordered_set&amp;gt; //bits 也可以
+using name.."><meta name="generator" content="Hexo 6.2.0"></head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">ppip's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">浅谈c++中的set与map家族</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Click back to the top</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E8%AF%B4%E5%8F%A5%E9%97%B2%E8%AF%9D"><span class="toc-text">0. 说句闲话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E8%8A%9D%E5%A3%AB%EF%BC%9A"><span class="toc-text">前置芝士：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E6%96%87%E5%8C%85%E5%90%AB%E4%BB%A5%E4%B8%8B%E5%86%85%E5%AE%B9%EF%BC%9A"><span class="toc-text">本文包含以下内容：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%8D%E6%8E%92%E5%BA%8F"><span class="toc-text">1. 不排序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%B8%8D%E5%8E%BB%E9%87%8D"><span class="toc-text">2. 不去重</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BD%A9%E8%9B%8B"><span class="toc-text">彩蛋</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Cpp"><i class="tag post-item-tag">Cpp</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">浅谈c++中的set与map家族</h1><time class="has-text-grey" datetime="2021-07-25T08:19:54.000Z">2021-07-25</time><article class="mt-2 post-content"><p>众所周知，<code>set</code> 和 <code>map</code> 是两种常用的 STL 容器。</p>
+<span id="more"></span>
+<h2 id="0-说句闲话"><a href="#0-说句闲话" class="headerlink" title="0. 说句闲话"></a>0. 说句闲话</h2><h3 id="前置芝士："><a href="#前置芝士：" class="headerlink" title="前置芝士："></a>前置芝士：</h3><ul>
+<li><code>set</code> 与 <code>map</code> 的熟练使用，包括遍历</li>
+</ul>
+<h3 id="本文包含以下内容："><a href="#本文包含以下内容：" class="headerlink" title="本文包含以下内容："></a>本文包含以下内容：</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>不排序</th>
+<th>不去重</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>set</code></td>
+<td><code>unordered_set</code></td>
+<td><code>multiset</code></td>
+</tr>
+<tr>
+<td><code>map</code></td>
+<td><code>unordered_map</code></td>
+<td><code>multimap</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>并且全部为 <code>C++11</code> 标准中的内容。</p>
+<h2 id="1-不排序"><a href="#1-不排序" class="headerlink" title="1. 不排序"></a>1. 不排序</h2><p><code>set</code> 和 <code>map</code> 都是用红黑树实现的，虽然是 $\log n$，但还是比较慢的。</p>
+<p><code>unordered_set</code> 就会快很多，它不使用平衡树，而是用哈希实现，复杂度 $O(1)$。</p>
+<p>由于是把相同哈希值的元素放在一起，遍历时没有顺序。<strong>并不保证按输入顺序输出</strong>。</p>
+<pre><code class="lang-c++">#include &lt;unordered_set&gt; //bits 也可以
+using namespace std;
+
+...
+
+unordered_set &lt;int&gt; s;
+
+s.insert(9);
+s.insert(2);
+s.insert(1);
+s.insert(9);
+s.insert(8);
+s.insert(7);
+
+for (auto i : s)
+    cout &lt;&lt; i &lt;&lt; &#39; &#39;;
+
+...
+</code></pre>
+<p>输出：</p>
+<pre><code>7 8 1 9 2
+</code></pre><p>注意 <code>unordered_set</code> 仍然会进行去重。</p>
+<p><code>find()</code>、<code>count()</code>、<code>size()</code>等和 <code>set</code> 无区别。</p>
+<p><code>unordered_map</code> 同 <code>unordered_set</code>，但是使用 <code>operator[]</code> 时属于修改，后插入的会替换之前的。</p>
+<pre><code class="lang-c++">#include &lt;unordered_map&gt; //bits 也可以
+using namespace std;
+
+...
+
+unordered_map &lt;int, int&gt; m;
+
+m.insert(make_pair(9, 8)); //其实 map &lt;Ta, Tb&gt; 可以当作 set &lt;pair &lt;Ta, Tb&gt; &gt;
+m.insert(make_pair(9, 2));
+m.insert(make_pair(1, 7));
+m.insert(make_pair(2, 0));
+m.insert(make_pair(0, 2));
+m.insert(make_pair(1, 6));
+++m[0];
+m[4]=6;
+m[4]=7;
+
+for(auto i : m)
+    cout &lt;&lt; i.first &lt;&lt; &#39; &#39; &lt;&lt; i.second &lt;&lt; endl;
+
+...
+</code></pre>
+<p>输出：</p>
+<pre><code>4 7
+0 3
+2 0
+9 8
+1 7
+</code></pre><h2 id="2-不去重"><a href="#2-不去重" class="headerlink" title="2. 不去重"></a>2. 不去重</h2><p><code>multiset</code> 和 <code>set</code> 基本一致，但是它不会去重。</p>
+<p>所以调用 <code>find()</code> 会返回第一个符合要求的（插入顺序），而 <code>count()</code> 会返回所有符合要求的。</p>
+<pre><code class="lang-c++">#include &lt;set&gt;
+using namespace std;
+
+...
+
+multiset &lt;int&gt; s;
+
+s.insert(9);
+s.insert(7);
+s.insert(9);
+s.insert(8);
+s.insert(1);
+s.insert(7);
+
+for (auto i : s)
+    cout &lt;&lt; i &lt;&lt; &#39; &#39;;
+
+...
+</code></pre>
+<p>输出：</p>
+<pre><code>1 7 7 8 9 9
+</code></pre><p><code>multimap</code> 同 <code>multiset</code>，且没有定义 <code>operator[]</code>。</p>
+<pre><code class="lang-c++">#include &lt;map&gt;
+using namespace std;
+
+...
+
+multimap &lt;int, int&gt; m;
+m.insert(&#123;9, 1&#125;);
+m.insert(&#123;2, 3&#125;);
+m.insert(&#123;3, 3&#125;);
+m.insert(&#123;8, 0&#125;);
+m.insert(&#123;9, 1&#125;);
+m.insert(&#123;3, 2&#125;);
+
+for (auto &amp;i : m)
+    cout &lt;&lt; i.first &lt;&lt; &#39; &#39; &lt;&lt; i.second &lt;&lt; endl;
+
+...
+</code></pre>
+<p>输出：</p>
+<pre><code>2 3
+3 3
+3 2
+8 0
+9 1
+9 3
+</code></pre><p>注意相同键值按插入顺序排列。</p>
+<h2 id="彩蛋"><a href="#彩蛋" class="headerlink" title="彩蛋"></a>彩蛋</h2><p>相信一定有人问了：有没有既不排序、也不去重的 <code>set</code> / <code>map</code> 呢？</p>
+<p>有！</p>
+<p><del><code>vector</code></del> <code>unordered_multiset</code> / <code>unordered_multimap</code> 就满足这个要求。</p>
+<p>而且，只要人品好，哈希值不怎么冲突，什么操作都是 $O(1)$ ，吊打 <code>vector</code>（特别是插入与删除）。</p>
+<p>这不是本文的重点，有兴趣的巨佬可以自行研究。</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/p/iterator/" title="C++ 迭代器，了解一下？（2）"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">Previous: C++ 迭代器，了解一下？（2）</span></a><a class="button is-default" href="/p/hello-world/" title="hexo theme cutie v2.x tutorial"><span class="has-text-weight-semibold">Next: hexo theme cutie v2.x tutorial</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="NFLSCode/nflscode.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><a title="twitter" target="_blank" rel="noopener nofollow" href="//twitter.com//"><i class="iconfont icon-twitter"></i></a><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/NFLSCode"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com//"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--><a title="facebook" target="_blank" rel="noopener nofollow" href="//www.facebook.com//"><i class="iconfont icon-tian7_facebook"></i></a></section><p><span>Copyright ©</span><span> ppip 2022</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

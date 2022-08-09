@@ -1,0 +1,94 @@
+<!DOCTYPE html><html class="appearance-auto" lang="en"><head><meta charset="UTF-8"><title>[USACO17JAN]Promotion Counting P 题解</title><meta name="description" content="分块好耶"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="题目传送门
+线段树合并+动态开点（指针党福利）
+
+在值域上开线段树为啥要离散化啊，我不能理解
+所以这是一份无需离散化的题解。
+#include &amp;lt;bits/stdc++.h&amp;gt;
+using namespace std;
+struct tnode
+&amp;#123;
+    tnode *l,*r;
+    // 该区间数的个数
+    int cnt;
+&amp;#125;;
+using pnode=tnode*;
+// 哨兵节点
+pnode nil&amp;#123;new tnode&amp;#123;nil,nil,0&amp;#125;&amp;#125;;
+void check(pnode&amp;amp; p)&amp;#123;if(p==nil)p=new tnode&amp;#123;nil,nil,0&amp;#125;;&amp;#125;
+// insert.."><meta name="generator" content="Hexo 6.2.0"></head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">ppip's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[USACO17JAN]Promotion Counting P 题解</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Click back to the top</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile is-hidden"></div><div class="column is-9"><header class="my-4"><a href="/tags/Luogu"><i class="tag post-item-tag">Luogu</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[USACO17JAN]Promotion Counting P 题解</h1><time class="has-text-grey" datetime="2022-05-28T06:15:09.000Z">2022-05-28</time><article class="mt-2 post-content"><p><a href="https://www.luogu.com.cn/problem/P3605">题目传送门</a></p>
+<p>线段树合并+动态开点（指针党福利）</p>
+<span id="more"></span>
+<p>在值域上开线段树为啥要离散化啊，我不能理解</p>
+<p>所以这是一份无需离散化的题解。</p>
+<pre><code class="lang-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+struct tnode
+&#123;
+    tnode *l,*r;
+    // 该区间数的个数
+    int cnt;
+&#125;;
+using pnode=tnode*;
+// 哨兵节点
+pnode nil&#123;new tnode&#123;nil,nil,0&#125;&#125;;
+void check(pnode&amp; p)&#123;if(p==nil)p=new tnode&#123;nil,nil,0&#125;;&#125;
+// insert操作。cnt为当前区间size，使用了类似第k大的写法
+void modify(pnode&amp; p,int k,int cnt)
+&#123;
+    check(p);++p-&gt;cnt;
+    if (cnt==1) return;
+    int cq&#123;cnt&gt;&gt;1&#125;;
+    if (k&lt;=cq) modify(p-&gt;l,k,cq);
+    else modify(p-&gt;r,k-cq,cnt-cq);
+&#125;
+void merge(pnode&amp; p,pnode q)
+&#123;
+    if (q==nil) return;
+    if (p==nil)
+    &#123;
+        p=q;
+        return;
+    &#125;
+    p-&gt;cnt+=q-&gt;cnt;
+    merge(p-&gt;l,q-&gt;l);merge(p-&gt;r,q-&gt;r);
+    // 垃圾回收
+    delete q;
+&#125;
+// 查询大于k的数的个数
+int query(pnode p,int k,int L,int R)
+&#123;
+    if (p==nil||L&gt;k) return p-&gt;cnt;
+    int mid&#123;L+R&gt;&gt;1&#125;;
+    // 显然如果k在右儿子里就只用查询右儿子，否则只用查询左儿子
+    // 同样类似第k大
+    if (k&gt;=mid-1) return query(p-&gt;r,k,mid,R);
+    else return p-&gt;r-&gt;cnt+query(p-&gt;l,k,L,mid);
+&#125;
+const int N(1e5);
+int v[N+5],r[N+5];
+vector&lt;int&gt; e[N+5];
+pnode fz(int u)
+&#123;
+    pnode p&#123;nil&#125;;
+    for (auto v:e[u])
+        merge(p,fz(v));
+    r[u]=query(p,v[u],1,1e9+1);
+    modify(p,v[u],1e9);
+    return p;
+&#125;
+int main()
+&#123;
+    int n;cin&gt;&gt;n;
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        scanf(&quot;%d&quot;,v+i);
+    for (int i&#123;2&#125;;i&lt;=n;++i)
+    &#123;
+        int fa;scanf(&quot;%d&quot;,&amp;fa);
+        e[fa].push_back(i);
+    &#125;
+    fz(1);
+    for (int i&#123;1&#125;;i&lt;=n;++i) printf(&quot;%d\n&quot;,r[i]);
+&#125;
+</code></pre>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/p/solution-p3591/" title="[POI2015]ODW 题解"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">Previous: [POI2015]ODW 题解</span></a><a class="button is-default" href="/p/solution-p3471/" title="[POI2008]POC-Trains 题解"><span class="has-text-weight-semibold">Next: [POI2008]POC-Trains 题解</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="NFLSCode/nflscode.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><a title="twitter" target="_blank" rel="noopener nofollow" href="//twitter.com//"><i class="iconfont icon-twitter"></i></a><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/NFLSCode"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com//"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--><a title="facebook" target="_blank" rel="noopener nofollow" href="//www.facebook.com//"><i class="iconfont icon-tian7_facebook"></i></a></section><p><span>Copyright ©</span><span> ppip 2022</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

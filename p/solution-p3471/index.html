@@ -1,0 +1,119 @@
+<!DOCTYPE html><html class="appearance-auto" lang="en"><head><meta charset="UTF-8"><title>[POI2008]POC-Trains 题解</title><meta name="description" content="分块好耶"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="题目传送门
+这是一个 $O(nl+m)$ 的做法（即和输入同阶）。
+
+首先，看到字符串相同显然想到哈希。我们开一个哈希表，每个键值维护一个 size。对于每次修改，从表中原位置删除，重新计算哈希然后插入到新位置。
+更新的话，只要在删除的时候查一下在当前的键值下，从插入到现在这段时间中 size 的最大值。
+所以，我们只需要在线支持如下操作：
+
+查询后缀最大值
+在结尾插入一个数
+
+显然可以开一个并查集维护（如果不会带权并查集可以看这个）。
+// 返回的不是祖先而是 `x` 这个点的后缀最大值（其实所有点的祖先都是最后插入的数）
+int Find(int u,int x)
+&amp;#123;
+    if (dsu[u][x].fa==x) return dsu[u][x].mx;
+    dsu[u][x].mx=.."><meta name="generator" content="Hexo 6.2.0"></head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">ppip's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[POI2008]POC-Trains 题解</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Click back to the top</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile is-hidden"></div><div class="column is-9"><header class="my-4"><a href="/tags/Luogu"><i class="tag post-item-tag">Luogu</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[POI2008]POC-Trains 题解</h1><time class="has-text-grey" datetime="2022-05-24T12:20:15.000Z">2022-05-24</time><article class="mt-2 post-content"><p><a href="https://www.luogu.com.cn/problem/P3471">题目传送门</a></p>
+<p>这是一个 $O(nl+m)$ 的做法（即和输入同阶）。</p>
+<span id="more"></span>
+<p>首先，看到字符串相同显然想到哈希。我们开一个哈希表，每个键值维护一个 <code>size</code>。对于每次修改，从表中原位置删除，重新计算哈希然后插入到新位置。</p>
+<p>更新的话，只要在删除的时候查一下在当前的键值下，从插入到现在这段时间中 <code>size</code> 的最大值。</p>
+<p>所以，我们只需要在线支持如下操作：</p>
+<ul>
+<li>查询后缀最大值</li>
+<li>在结尾插入一个数</li>
+</ul>
+<p>显然可以开一个并查集维护（如果不会带权并查集可以看<a href="https://www.luogu.com.cn/blog/374433/union-find">这个</a>）。</p>
+<pre><code class="lang-cpp">// 返回的不是祖先而是 `x` 这个点的后缀最大值（其实所有点的祖先都是最后插入的数）
+int Find(int u,int x)
+&#123;
+    if (dsu[u][x].fa==x) return dsu[u][x].mx;
+    dsu[u][x].mx=max(dsu[u][x].mx,Find(u,dsu[u][x].fa));
+    dsu[u][x].fa=dsu[u][dsu[u][x].fa].fa;
+    return dsu[u][x].mx;
+&#125;
+void insert(int x)
+&#123;
+    int H&#123;h[x]&#125;;// h[x] 为串 x 的哈希
+    // 动态开 vector，主要是开表大小个 vector 内存会炸
+    if (!F[H]) F[H]=cnt++;
+    // 插入的位置（即删除时要查询的位置）
+    lst[x]=dsu[F[H]].size();
+    ++sz[H];
+    // 将前面的树 merge 到新插入的点
+    if (lst[x]) dsu[F[H]][lst[x]-1].fa=lst[x];
+    // 插入新节点
+    dsu[F[H]].emplace_back(lst[x],sz[H]);
+&#125;
+</code></pre>
+<p>因为只有一棵树且没有 <code>merge</code>，所以这份并查集的复杂度是线性的。</p>
+<p>最后还要再更新一下最大值。</p>
+<pre><code class="lang-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+const int bn&#123;2579&#125;,b6e0&#123;25165843&#125;;
+const int N(1e3),M(1e5);
+int sz[b6e0],res[N];
+int lst[N];
+int F[b6e0];
+struct node
+&#123;
+    int fa,mx;
+    node(int _fa=0,int _mx=0):fa&#123;_fa&#125;,mx&#123;_mx&#125;&#123;&#125;
+&#125;;
+vector&lt;node&gt; dsu[N+M];int cnt;
+int h[N],pl[N],l;
+string s[N];
+int Find(int u,int x)
+&#123;
+    if (dsu[u][x].fa==x) return dsu[u][x].mx;
+    dsu[u][x].mx=max(dsu[u][x].mx,Find(u,dsu[u][x].fa));
+    dsu[u][x].fa=dsu[u][dsu[u][x].fa].fa;
+    return dsu[u][x].mx;
+&#125;
+void fresh(int x,int p,int n)
+&#123;
+    h[x]=(h[x]+1LL*pl[l-p-1]*(n-s[x][p])%b6e0)%b6e0;
+    if (h[x]&lt;0) h[x]=(h[x]+b6e0)%b6e0;
+    s[x][p]=n;
+&#125;
+void upd(int x)
+&#123;
+    int H&#123;h[x]&#125;;
+    if (!F[H]) F[H]=cnt++;
+    lst[x]=dsu[F[H]].size();
+    ++sz[H];
+    if (lst[x]) dsu[F[H]][lst[x]-1].fa=lst[x];
+    dsu[F[H]].emplace_back(lst[x],sz[H]);
+
+&#125;
+int main()
+&#123;
+    int n,m;cin&gt;&gt;n&gt;&gt;l&gt;&gt;m;
+    for (int i&#123;0&#125;;i&lt;n;++i)
+    &#123;
+        cin&gt;&gt;s[i];
+        for (char c:s[i])
+            h[i]=(1LL*h[i]*bn%b6e0+c-&#39;a&#39;)%b6e0;
+        upd(i); 
+    &#125;
+    pl[0]=1;
+    for (int i&#123;1&#125;;i&lt;=l;++i)
+        pl[i]=1LL*pl[i-1]*bn%b6e0;
+    while (m--)
+    &#123;
+        int a,i,b,j;
+        scanf(&quot;%d %d %d %d&quot;,&amp;a,&amp;i,&amp;b,&amp;j);
+        --a;--i;--b;--j;
+        --sz[h[a]];res[a]=max(res[a],Find(F[h[a]],lst[a]));
+        if (a!=b) --sz[h[b]],res[b]=max(res[b],Find(F[h[b]],lst[b]));
+        char x&#123;s[a][i]&#125;,y&#123;s[b][j]&#125;;
+        fresh(a,i,y);fresh(b,j,x);
+        upd(a);if (a!=b) upd(b);
+    &#125;
+    for (int i&#123;0&#125;;i&lt;n;++i)
+        cout&lt;&lt;max(res[i],Find(F[h[i]],lst[i]))&lt;&lt;endl;
+    return 0;
+&#125;
+</code></pre>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/p/solution-p3605/" title="[USACO17JAN]Promotion Counting P 题解"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">Previous: [USACO17JAN]Promotion Counting P 题解</span></a><a class="button is-default" href="/p/solution-p8271/" title="[USACO22OPEN]COW Operations S 题解"><span class="has-text-weight-semibold">Next: [USACO22OPEN]COW Operations S 题解</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="NFLSCode/nflscode.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><a title="twitter" target="_blank" rel="noopener nofollow" href="//twitter.com//"><i class="iconfont icon-twitter"></i></a><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/NFLSCode"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com//"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--><a title="facebook" target="_blank" rel="noopener nofollow" href="//www.facebook.com//"><i class="iconfont icon-tian7_facebook"></i></a></section><p><span>Copyright ©</span><span> ppip 2022</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

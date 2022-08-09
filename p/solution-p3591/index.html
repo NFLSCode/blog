@@ -1,0 +1,128 @@
+<!DOCTYPE html><html class="appearance-auto" lang="en"><head><meta charset="UTF-8"><title>[POI2015]ODW 题解</title><meta name="description" content="分块好耶"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="题目传送门
+这是一个树剖+序列分块。感觉因为单纯树剖跑不满 log，比树上k级祖先+根号分治的做法要快一些。
+
+对于查询的两个端点，记余数 $m_u,m_v$ 为 $1$。
+每次树剖跳 $u$ 的时候，在序列上查询这一段模数为 $k$，且下标（从1开始）余数为 $m_u$ 的和，再令 $m_u=(m_u-l)\mod k$（$l$ 是查询区间的长度）。跳 $v$ 同理。
+对 dfs 序进行分块，块大小为 $S$。每块对于 $1\leq k\leq S$ 的模数预处理出下标（从1开始）余数为 $0\leq m&amp;lt;k$ 的和。
+散块暴力跳，跑完每个块，余数类似树剖那段进行变化。
+如果查询的 $k\geq S$，就直接暴力跳整个区间。
+一个小问题是树剖是倒着跳的，在正的 dfs 序上查询余数有点麻烦。
+所以我.."><meta name="generator" content="Hexo 6.2.0"></head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">ppip's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[POI2015]ODW 题解</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Click back to the top</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile is-hidden"></div><div class="column is-9"><header class="my-4"><a href="/tags/Luogu"><i class="tag post-item-tag">Luogu</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[POI2015]ODW 题解</h1><time class="has-text-grey" datetime="2022-07-18T01:45:32.000Z">2022-07-18</time><article class="mt-2 post-content"><p><a href="https://www.luogu.com.cn/problem/P3591">题目传送门</a></p>
+<p>这是一个树剖+序列分块。感觉因为单纯树剖跑不满 log，比树上k级祖先+根号分治的做法要快一些。</p>
+<span id="more"></span>
+<p>对于查询的两个端点，记余数 $m_u,m_v$ 为 $1$。</p>
+<p>每次树剖跳 $u$ 的时候，在序列上查询这一段模数为 $k$，且下标（从1开始）余数为 $m_u$ 的和，再令 $m_u=(m_u-l)\mod k$（$l$ 是查询区间的长度）。跳 $v$ 同理。</p>
+<p>对 dfs 序进行分块，块大小为 $S$。每块对于 $1\leq k\leq S$ 的模数预处理出下标（从1开始）余数为 $0\leq m&lt;k$ 的和。</p>
+<p>散块暴力跳，跑完每个块，余数类似树剖那段进行变化。</p>
+<p>如果查询的 $k\geq S$，就直接暴力跳整个区间。</p>
+<p>一个小问题是树剖是倒着跳的，在正的 dfs 序上查询余数有点麻烦。</p>
+<p>所以我们把每个点在 dfs 序上的位置变为 <code>n-dfn[x]+1</code>，相当于分块维护反 dfs 序。</p>
+<p>本质类似根号分治做法，但充分利用了树剖的特性而不是每次就只跳 $S$。</p>
+<p>取 $S=\sqrt{n}$，时间 $O(n\lg n\sqrt{n})$，空间 $\Theta(n\sqrt{n})$。</p>
+<pre><code class="lang-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+inline int read()&#123;
+    char c;int x,f&#123;0&#125;;
+    do x=(c=getchar())^48;
+    while (!isdigit(c)&amp;&amp;c!=&#39;-&#39;);
+    if (x==29) f=-1,x=0;
+    while (isdigit(c=getchar()))
+        x=(x&lt;&lt;3)+(x&lt;&lt;1)+(c^48);
+    return (x^f)-f;
+&#125;
+const int N(5e4),B&#123;223*20&#125;,K&#123;N/B+1&#125;;
+// val是dfs序上的点权
+int sum[B+5][K][K],val[N+5],a[N+5],n;
+inline int R(int b)&#123;return b*K;&#125;
+inline int L(int b)&#123;return R(b-1)+1;&#125;
+inline int bl(int x)&#123;return (x-1)/K+1;&#125;;
+int ppip(int l,int r,int k,int m)
+&#123;
+    if (!m) m=k;
+    int ans&#123;0&#125;;
+    for (int i&#123;l+m-1&#125;;i&lt;=r;i+=k)
+        ans+=val[i];
+    return ans;
+&#125;
+// 序列分块
+int query(int l,int r,int k,int m)&#123;
+    if (bl(l)==bl(r)) return ppip(l,r,k,m);
+    int ans&#123;ppip(l,R(bl(l)),k,m)&#125;;
+    m=(m+k-(R(bl(l))-l+1)%k)%k;
+    assert(R(bl(r)-1)&lt;=n);
+    for (int i&#123;bl(l)+1&#125;;i&lt;bl(r);++i) &#123;
+        if (k&gt;=K) &#123;
+            if (k==K&amp;&amp;m==0) ans+=val[R(i)];
+            else if (m&lt;=K&amp;&amp;m) ans+=val[L(i)+m-1];
+        &#125; else ans+=sum[i][k][m];
+        m=(m+k-K%k)%k;
+    &#125;
+    ans+=ppip(L(bl(r)),r,k,m);
+    return ans;
+&#125;
+int fa[N+5],dep[N+5],sz[N+5],son[N+5],tp[N+5];
+int dfn[N+5];
+vector&lt;int&gt; e[N+5];
+// 树剖
+void fz_init(int u,int f)&#123;
+    fa[u]=f;dep[u]=dep[f]+1;sz[u]=1;
+    for (auto v:e[u])
+        if (v!=f) &#123;
+            fz_init(v,u);
+            sz[u]+=sz[v];
+            if (sz[v]&gt;sz[son[u]])
+                son[u]=v;
+        &#125;
+&#125;
+void fz_cut(int u,int top)&#123;
+    static int cxx&#123;1&#125;;
+    tp[u]=top;dfn[u]=cxx++;
+    if (son[u]) fz_cut(son[u],top);
+    for (auto v:e[u])
+        if (v!=fa[u]&amp;&amp;v!=son[u])
+            fz_cut(v,v);
+&#125;
+int query(int u,int v,int k)&#123;
+    int wu&#123;1%k&#125;,wv&#123;1%k&#125;,ans&#123;0&#125;;
+    while (tp[u]!=tp[v])&#123;
+        if (dep[tp[u]]&lt;dep[tp[v]])
+            swap(u,v),swap(wu,wv);
+        // 注意反dfs序反着询问
+        ans+=query(dfn[u],dfn[tp[u]],k,wu);
+        wu=(wu+k-(dfn[tp[u]]-dfn[u]+1)%k)%k;
+        u=fa[tp[u]];
+    &#125;
+    if (dep[u]&lt;dep[v]) swap(u,v),swap(wu,wv);
+    ans+=query(dfn[u],dfn[v],k,wu);
+    return ans;
+&#125;
+int main()&#123;
+    n=read();
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        scanf(&quot;%d&quot;,a+i);
+    for (int i&#123;1&#125;;i&lt;n;++i) &#123;
+        int a&#123;read()&#125;,b&#123;read()&#125;;
+        e[a].push_back(b);
+        e[b].push_back(a);
+    &#125;
+    fz_init(1,0);fz_cut(1,1);
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        dfn[i]=n-dfn[i]+1;
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        val[dfn[i]]=a[i];
+    for (int k&#123;1&#125;;k&lt;K;++k)
+        for (int i&#123;2&#125;;i&lt;bl(n);++i)
+            for (int j&#123;L(i)&#125;;j&lt;=R(i);++j)
+                sum[i][k][(j-L(i)+1)%k]+=val[j];
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        a[i]=read();
+    for (int i&#123;1&#125;;i&lt;n;++i) &#123;
+        int w&#123;read()&#125;;
+        printf(&quot;%d\n&quot;,query(a[i],a[i+1],w));
+    &#125;
+    return 0;
+&#125;
+</code></pre>
+<p>随便跑跑就最优解第一页了。</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/p/solution-bzoj4771/" title="七彩树 题解"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">Previous: 七彩树 题解</span></a><a class="button is-default" href="/p/solution-p3605/" title="[USACO17JAN]Promotion Counting P 题解"><span class="has-text-weight-semibold">Next: [USACO17JAN]Promotion Counting P 题解</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="NFLSCode/nflscode.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><a title="twitter" target="_blank" rel="noopener nofollow" href="//twitter.com//"><i class="iconfont icon-twitter"></i></a><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/NFLSCode"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com//"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--><a title="facebook" target="_blank" rel="noopener nofollow" href="//www.facebook.com//"><i class="iconfont icon-tian7_facebook"></i></a></section><p><span>Copyright ©</span><span> ppip 2022</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

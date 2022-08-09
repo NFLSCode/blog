@@ -1,0 +1,99 @@
+<!DOCTYPE html><html class="appearance-auto" lang="en"><head><meta charset="UTF-8"><title>普通计算姬 题解</title><meta name="description" content="分块好耶"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="题目传送门
+序列分块。对于每一个块预处理出其答案。
+考虑修改时对每一个块的贡献。因为每个点只对它祖先的答案有贡献，所以我们可以遍历整棵树，开一个桶记录当前每一个块的数个数。遍历到 x 时，将该桶的内容就是 x 对每个块的贡献，记录下来即可。这样修改时统计每个块 sum 加了多少就是贡献乘值的变化，$O(\sqrt{n})+\text{node modify}$。
+查询时整块加起来，散块暴力求出每个点的子树和，$O(\sqrt{n})(1+\text{tree query})$。
+显然我们需要一个数据结构维护 dfs 序上的单点加区间求和。
+考虑根号平衡，分块维护前缀和数组，这样 $\text{node modify}$ 就相当于后缀加，$O(\sqrt{n})$，$\text{tree query}$ 就相.."><meta name="generator" content="Hexo 6.2.0"></head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">ppip's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">普通计算姬 题解</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Click back to the top</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">Home</a></h3><h3 class="is-inline-block"><a href="/about">About</a></h3><h3 class="is-inline-block"><a href="/archives">Archives</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile is-hidden"></div><div class="column is-9"><header class="my-4"><a href="/tags/BZOJ"><i class="tag post-item-tag">BZOJ</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">普通计算姬 题解</h1><time class="has-text-grey" datetime="2022-07-24T07:27:00.000Z">2022-07-24</time><article class="mt-2 post-content"><p><a href="https://hydro.ac/d/bzoj/p/4765/">题目传送门</a></p>
+<p>序列分块。对于每一个块预处理出其答案。</p>
+<p>考虑修改时对每一个块的贡献。因为每个点只对它祖先的答案有贡献，所以我们可以遍历整棵树，开一个桶记录当前每一个块的数个数。遍历到 x 时，将该桶的内容就是 x 对每个块的贡献，记录下来即可。这样修改时统计每个块 sum 加了多少就是贡献乘值的变化，$O(\sqrt{n})+\text{node modify}$。</p>
+<p>查询时整块加起来，散块暴力求出每个点的子树和，$O(\sqrt{n})(1+\text{tree query})$。</p>
+<p>显然我们需要一个数据结构维护 dfs 序上的单点加区间求和。</p>
+<p>考虑根号平衡，分块维护前缀和数组，这样 $\text{node modify}$ 就相当于后缀加，$O(\sqrt{n})$，$\text{tree query}$ 就相当于单点查询，$\Theta(1)$。</p>
+<p>如此，修改、查询复杂度为 $O(\sqrt{n})$，总复杂度 $O(n\sqrt{n})$。</p>
+<p>显然不同块对答案的贡献可以独立计算，所以可以离线下来，每个块单独处理。这样空间 $\Theta(n\sqrt{n})\to\Theta(n)$（虽然 $\Theta(n\sqrt{n})$）也能通过）。</p>
+<p><del>我这么懒的人肯定只会写在线</del></p>
+<pre><code class="lang-cpp">#include &lt;bits/stdc++.h&gt;
+using namespace std;
+// #define int uLL
+using uLL=unsigned long long;
+inline int read() &#123;
+    char c;int x;
+    do x=(c=getchar())^48;
+    while (!isdigit(c));
+    while (isdigit(c=getchar()))
+    x=(x&lt;&lt;3)+(x&lt;&lt;1)+(c^48);
+    return x;
+&#125;
+const int N(1e5),B&#123;316&#125;,K&#123;N/B+1&#125;;
+int a[N+5];
+int n,gf[N+5][B+5],dfn[N+5],fz[N+5],dR[N+5];
+uLL val[N+5],tag[B+5],res[B+5];
+vector&lt;int&gt; e[N+5];
+inline int bl(int x)&#123;return x?(x-1)/K+1:0;&#125;
+inline int R(int b)&#123;return min(n,b*K);&#125;
+inline int L(int b)&#123;return R(b-1)+1;&#125;
+uLL query(int l,int r) &#123;
+    --l;
+    return val[r]+tag[bl(r)]-val[l]-tag[bl(l)];
+&#125;
+void modify(int p,int v) &#123;
+    for (int i&#123;p&#125;;i&lt;=R(bl(p));++i) val[i]+=v;
+    for (int i&#123;bl(p)+1&#125;;i&lt;=bl(n);++i) tag[i]+=v;
+&#125;
+uLL ppip(int l,int r) &#123;
+    uLL ans&#123;0&#125;;
+    for (int i&#123;l&#125;;i&lt;=r;++i) ans+=query(dfn[i],dR[i]-1);
+    return ans;
+&#125;
+void fz_init(int u,int fa) &#123;
+    static int cxx&#123;1&#125;,bf[B+5]&#123;&#125;;
+    fz[cxx]=u;dfn[u]=cxx++;
+    ++bf[bl(u)];
+    copy_n(bf+1,bl(n),gf[u]+1);
+    for (auto v:e[u])
+        if (v!=fa)
+            fz_init(v,u);
+    --bf[bl(u)];
+    dR[u]=cxx;
+&#125;
+int main() &#123;
+    // freopen(&quot;4765/1.in&quot;,&quot;r&quot;,stdin);
+    int n&#123;read()&#125;,m&#123;read()&#125;;::n=n;
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        a[i]=read();
+
+    for (int i&#123;1&#125;;i&lt;=n;++i) &#123;
+        int u&#123;read()&#125;,v&#123;read()&#125;;
+        e[u].push_back(v);
+        e[v].push_back(u);
+    &#125;
+    fz_init(e[0][0],0);
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        val[i]=val[i-1]+a[fz[i]];
+    for (int i&#123;1&#125;;i&lt;=n;++i)
+        res[bl(i)]+=query(dfn[i],dR[i]-1);
+    // for (int i&#123;1&#125;;i&lt;=bl(n);++i) cout&lt;&lt;gf[2000][i]&lt;&lt;endl;
+    while (m--) &#123;
+        int op&#123;read()&#125;,x&#123;read()&#125;,y&#123;read()&#125;;
+        if (op==1) &#123;
+            a[x]+=y-=a[x];
+            modify(dfn[x],y);
+            for (int i&#123;1&#125;;i&lt;=bl(n);++i)
+                res[i]+=(uLL)y*gf[x][i];
+        &#125; else &#123;
+            uLL ans;
+            if (bl(x)==bl(y)) &#123;
+                ans=ppip(x,y);
+            &#125; else &#123;
+                ans=ppip(x,R(bl(x)))+ppip(L(bl(y)),y);
+                for (int i&#123;bl(x)+1&#125;;i&lt;bl(y);++i)
+                    ans+=res[i];
+            &#125;
+            printf(&quot;%llu\n&quot;,ans);
+        &#125;
+    &#125;
+    return 0;
+&#125;
+</code></pre>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/p/solution-p5191/" title="[COCI2009-2010#6]HOLMES 题解"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">Previous: [COCI2009-2010#6]HOLMES 题解</span></a><a class="button is-default" href="/p/polyquine/" title="Polyquine —— 同时在多种语言运行的自生成程式"><span class="has-text-weight-semibold">Next: Polyquine —— 同时在多种语言运行的自生成程式</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="NFLSCode/nflscode.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><a title="twitter" target="_blank" rel="noopener nofollow" href="//twitter.com//"><i class="iconfont icon-twitter"></i></a><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/NFLSCode"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com//"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--><a title="facebook" target="_blank" rel="noopener nofollow" href="//www.facebook.com//"><i class="iconfont icon-tian7_facebook"></i></a></section><p><span>Copyright ©</span><span> ppip 2022</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
